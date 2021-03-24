@@ -1,0 +1,4 @@
+1> Center the text as for some colors, text is still out of the rect box
+2> Add another box at the bottom right separately for Accuracy
+3> Add the concept of clustering and show the clusters
+    - # 3 clusters :: around R G B
