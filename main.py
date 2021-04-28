@@ -2,6 +2,8 @@
 import cv2 # opencv to read and show the image and display results
 import numpy as np 
 import pandas as pd
+import matplotlib.pyplot as plt
+from sklearn.cluster import KMeans
 from colormap import rgb2hex # to convert (r, g, b) values to hex values
 #import argparse
 
@@ -12,7 +14,7 @@ from colormap import rgb2hex # to convert (r, g, b) values to hex values
 #img_path = args['image']
 
 # Reading the image with opencv
-img_path = '/home/aftaab/Projects/ML/ColorZilla_Clone/painting.jpg' # Image path of the image to be used
+img_path = '/home/aftaab/Projects/ColorZilla_Clone/tree.jpg' # Image path of the image to be used
 in_img = cv2.imread(img_path) #reading image from the given path
 img = cv2.resize(in_img, (1000, 800))
 
@@ -22,6 +24,20 @@ r = g = b = xpos = ypos = 0 # global variables
 
 name = ["color", "color_name", "hex", "R", "G", "B"]
 dataset = pd.read_csv('colors.csv', names=name, header=None)
+# x = dataset.iloc[:, [3,5]].values
+# 
+# kmeans = KMeans(n_clusters=3, init='k-means++', random_state=42)
+# y_means = kmeans.fit_predict(x)
+# 
+# plt.scatter(x[y_means == 0, 0], x[y_means == 0, 1], s=100, c='red', label='Cluster 1')
+# plt.scatter(x[y_means == 1, 0], x[y_means == 1, 1], s=100, c='blue', label='Cluster 2')
+# plt.scatter(x[y_means == 2, 0], x[y_means == 2, 1], s=100, c='green', label='Cluster 3')
+# 
+# plt.title('The Output')
+# plt.xlabel('Colors')
+# plt.ylabel('values')
+# plt.legend()
+# plt.show()
 
 # Calculate the minimum distance from each color to find the closest matching color
 def getColor(R, G, B):
@@ -38,13 +54,11 @@ def getColor(R, G, B):
 """
 To find the color of the given point, we first need to detect the (x, y) coordinates of the point clicked
 This can be done with the help of cv2.EVENT_LBUTTONDBLCLK 
-
 Function Argumments:
 @event => corresponds to the events triggered by the mouse
 @x, @y => Global variables
 @flags => corresponds to the type of image read by cv2.imread()
 @param => To add additional arguments whenever needed
-
 """ 
 
 def get_pos(event, x, y, flags, param):
@@ -96,4 +110,3 @@ while(1): # infinite loop
         break
 
 cv2.destroyAllWindows()
-
