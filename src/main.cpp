@@ -129,6 +129,16 @@ void drawLabel(cv::Mat &img, const std::string &text, cv::Point pos, const RGB &
     cv::putText(img, text, textOrg, fontFace, fontScale, textColor, thickness, cv::LINE_AA);
 }
 
+void copyToClipboard(const std::string &text)
+{
+    FILE *pipe = popen("xsel --clipboard --input", "w");
+    if (!pipe)
+        return;
+    fwrite(text.c_str(), 1, text.size(), pipe);
+    pclose(pipe);
+    std::cout << "Copied to clipboard:\n" << text << std::endl;
+}
+
 int main(int argc, char *argv[])
 {
     std::string image_path; // = "assets/images/colorpic.jpg";
@@ -169,6 +179,9 @@ int main(int argc, char *argv[])
     ClickData data;
     data.img = &resized_img;
 
+    RGB last_color = {0, 0, 0};
+    bool has_selection = false;
+
     cv::namedWindow("image");
 
     cv::setMouseCallback(
@@ -199,6 +212,9 @@ int main(int argc, char *argv[])
             // Reset image to clean state to remove previous labels
             clean_img.copyTo(resized_img);
 
+            last_color = data.color;
+            has_selection = true;
+
             std::pair<std::string, int> result = getColor(data.color, dataset);
             std::string colorFound = result.first;
             double accuracy = ((double)(765 - result.second) / 765) * 100;
@@ -207,7 +223,7 @@ int main(int argc, char *argv[])
             std::string text = colorFound + " R=" + std::to_string(data.color.r) +
                                " G=" + std::to_string(data.color.g) +
                                " B=" + std::to_string(data.color.b) + " " + rgb2hex(data.color) +
-                               " " + accuracy_value + "%";
+                               " " + accuracy_value + "%" + " | [c] Copy";
 
             drawLabel(resized_img, text, data.position, data.color);
 
@@ -218,6 +234,18 @@ int main(int argc, char *argv[])
         if (key == 27 || key == 'q')
         {
             break;
+        }
+        else if (key == 'c' && has_selection)
+        {
+            std::pair<std::string, int> result = getColor(last_color, dataset);
+            std::string colorFound = result.first;
+            double accuracy = ((double)(765 - result.second) / 765) * 100;
+            std::string accuracy_value = fmt::format("{:.2f}%", accuracy);
+
+            std::string clipboardText = fmt::format("Color: {}\nRGB: ({}, {}, {})\nHEX: {}\nAccuracy: {}",
+                                                    colorFound, last_color.r, last_color.g, last_color.b,
+                                                    rgb2hex(last_color), accuracy_value);
+            copyToClipboard(clipboardText);
         }
     }
 
